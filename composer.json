@@ -1,7 +1,7 @@
 {
-	"name": "micschk/silverstripe-focuspointcropper",
+	"name": "restruct/silverstripe-focuspointcropper",
 	"description": "Even smarter automatic image cropping for SilverStripe",
-	"type": "silverstripe-module",
+	"type": "silverstripe-vendormodule",
 	"keywords": ["silverstripe", "crop", "cropping", "focus", "focuspoint", "image"],
 	"license": "BSD-3-Clause",
 	"authors": [{
@@ -9,9 +9,17 @@
 		"homepage": "http://restruct.nl"
 	}],
 	"require": {
-		"jonom/focuspoint": "~2.1"
+		"jonom/focuspoint": "^3.0",
+        "restruct/silverstripe-simpler": "^0.1"
 	},
+    "autoload": {
+        "psr-4": {
+            "Restruct\\SilverStripe\\FocusPointCropper\\": "src/"
+        }
+    },
 	"extra": {
-		"installer-name": "focuspointcropper"
-	}
+        "expose": [
+            "client"
+        ]
+    }
 }

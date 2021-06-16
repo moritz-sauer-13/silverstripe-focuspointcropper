@@ -1,0 +1,24 @@
+@import '~cropperjs';
+
+#Form_fileEditForm_CropData_Holder:not(.debug) {
+    position: absolute; // setting fixed would also be an option
+    margin-left: -99999px;
+}
+.focuspoint {
+    .focuspoint-picker {
+        overflow: visible;
+    }
+    .focuspoint-picker__gradient {
+        // need to display because this also contains the focus indicator ("+")
+        //display: none;
+        background: none;
+    }
+    // We dont use/need dragging in our usecase
+    // (but we still need to show it because that also contains the black background)
+    //.cropper-drag-box { display: none; }
+    // Hide cropper 'capturing' layers, disabled from std config but just to be sure...
+    // (so clicks get to pass through to .cropper-crop-box .cropper-view-box .focuspoint-picker__overlay)
+    .cropper-move, .cropper-dashed, .cropper-center, .cropper-face {
+        display: none;
+    }
+}

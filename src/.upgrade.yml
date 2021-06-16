@@ -1,0 +1,3 @@
+mappings:
+  FocusPointCropImage: Restruct\SilverStripe\FocusPointCropper\FocusPointCropImageExtension
+  FocusPointCropField: Restruct\SilverStripe\FocusPointCropper\FocusPointCropField

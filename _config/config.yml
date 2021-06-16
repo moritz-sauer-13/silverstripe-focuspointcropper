@@ -2,9 +2,20 @@
 Name: focuspointcrop
 After: 'focuspoint'
 ---
-Image:
+SilverStripe\Assets\Image:
   extensions:
-    - FocusPointCropImage
-# Injector:
-#   Image:
-#     class: FPImage
+    - Restruct\SilverStripe\ImageCropper\ImageCropperExtension
+
+JonoM\FocusPoint\Forms\FocusPointField:
+  max_width: 400
+  max_height: 300
+
+SilverStripe\AssetAdmin\Forms\FileFormFactory:
+  extensions:
+    - Restruct\SilverStripe\ImageCropper\ImageCropperFormFactoryExtension
+
+SilverStripe\Admin\LeftAndMain:
+  extra_requirements_css:
+    - 'restruct/silverstripe-focuspointcropper: client/dist/styles/sscropper.css'
+  extra_requirements_javascript:
+    - 'restruct/silverstripe-focuspointcropper: client/dist/js/sscropper.js'
