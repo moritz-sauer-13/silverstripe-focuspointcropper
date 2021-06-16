@@ -12,6 +12,9 @@
 		"jonom/focuspoint": "^3.0",
         "restruct/silverstripe-simpler": "^0.1"
 	},
+    "replace": {
+        "micschk/silverstripe-focuspointcropper": "*"
+    },
     "autoload": {
         "psr-4": {
             "Restruct\\SilverStripe\\FocusPointCropper\\": "src/"
