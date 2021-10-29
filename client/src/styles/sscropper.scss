@@ -1,6 +1,7 @@
 @import '~cropperjs';
 
-#Form_fileEditForm_CropData_Holder:not(.debug) {
+#Form_fileEditForm_CropData_Holder:not(.debug),
+#Form_fileSelectForm_CropData_Holder:not(.debug) {
     position: absolute; // setting fixed would also be an option
     margin-left: -99999px;
 }

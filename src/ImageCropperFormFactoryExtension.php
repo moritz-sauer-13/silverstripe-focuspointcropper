@@ -22,7 +22,7 @@ use SilverStripe\View\Requirements;
 class ImageCropperFormFactoryExtension
     extends Extension
 {
-    private static $debug = true;
+    private static $debug = false;
 
     public function updateFormFields($fields, $controller, $formName, $context)
     {
@@ -32,7 +32,7 @@ class ImageCropperFormFactoryExtension
         /** @var File $record */
         $record = isset($context['Record']) ? $context['Record'] : null;
         if ($record && $record->hasField('CropData')) {
-            // Using HiddenField/display-none field, changes somehow will not be picked up (by react?) -> hiding old-skool
+            // Using HiddenField/display-none field, changes somehow will not be picked up (by react?) -> hiding old-skool (CSS)
             $fields->insertAfter('Title', $dataField = TextField::create('CropData', 'CropData', $record->CropData) );
             if(Director::isDev() && self::$debug) $dataField->addExtraClass('debug');
 
