@@ -65,6 +65,73 @@ class ImageCropperExtension
     {
         return $this->applyCropManipulation();
     }
+    
+
+    //
+    // Special version: CroppedOffsetFill - crop and transpose xPos/yPos offset a certain amount (persentage) (eg move it a bit to the left)
+    // @TODO: implement for vertical offset
+    // @TODO: check if we need to re-activate the focuspoint-offset functionality (and if this implementation works correctly)
+    //
+    public function CroppedOffsetFocusFill(int $width, int $height, int $offsetHorizontal = 0, int $offsetVertical = 0)
+    {
+        // OFFSET CROPDATA (by adding to the left AND/OR (remaining offset) subtract from the right
+        $cropData = json_decode( $this->owner->CropData );
+        if(!$cropData){
+            $cropData = (object) [
+                'originalX' => 0,
+                'originalY' => 0,
+                'originalWidth' => $this->owner->getWidth(),
+                'originalHeight' => $this->owner->getHeight(),
+            ];
+        }
+        if(abs($offsetHorizontal)) {
+            // offset crop
+//            $newOriginalX = $cropData->originalX + $offsetHorizontal;
+//            $cropData->originalX = ($offsetHorizontal < 0 ? max(0, $newOriginalX) : min($width, $newOriginalX));
+            $cropData->originalX += $offsetHorizontal;
+            // subtract any negative margin from the right side instead
+            if($cropData->originalX < 0){
+                $cropData->originalWidth += $cropData->originalX;
+                $cropData->originalX = 0;
+            }
+            // if offsetLeft+width = wider than image, crop overage from left side instead (add to offsetLeft)
+            if($cropData->originalX + $cropData->originalWidth > $this->owner->getWidth()){
+                $overage = $cropData->originalX + $cropData->originalWidth - $this->owner->getWidth();
+                $cropData->originalX += $overage;
+                $cropData->originalWidth -= $overage;
+            }
+        }
+        if(abs($offsetVertical)) {
+//            // offset crop
+//            $newOriginalY = $cropData->originalY + $offsetVertical;
+//            $cropData->originalY = ($offsetVertical < 0 ? max(0, $newOriginalY) : min($height, $newOriginalY));
+            user_error('CroppedOffsetFocusFill not yet implemented for Vertical offset...');
+        }
+        $this->owner->CropData = json_encode($cropData);
+
+
+//        // OFFSET CROP POSITION
+//        // FocusX: Decimal number between -1 & 1, where -1 is far left, 0 is center, 1 is far right.
+//        // FocusY: Decimal number between -1 & 1, where -1 is top, 0 is center, 1 is bottom.
+//        // offset focuspoint X
+//        if(abs($offsetHorizontal)){
+//            // eg image cropped to 200x100px with focuspoint at center: 100px,50px (0,0)
+//            // offset by -50px horizontally: 50px,50px (relative: 2 / 200px * -50px = -0.5 -> -0.5,0)
+//            $addSubtractRelativeOffset = 2 / $width * $offsetHorizontal;
+//            // add/substract
+//            $newFocusPointX = $this->owner->FocusPointX + $addSubtractRelativeOffset;
+//            // assign (while remaining between -1 & +1)
+//            $this->owner->FocusPointX = ($newFocusPointX > 0 ? min(1, $newFocusPointX) : max(-1, $newFocusPointX));
+//        }
+//        // offset focuspoint Y
+//        if(abs($offsetVertical)){
+//            $addSubtractRelativeOffset = 2 / $height * $offsetVertical;
+//            $newFocusPointY = $this->owner->FocusPointY + $addSubtractRelativeOffset;
+//            $this->owner->FocusPointY = ($newFocusPointY > 0 ? min(1, $newFocusPointY) : max(-1, $newFocusPointY));
+//        }
+
+        return $this->applyCropManipulation()->FocusFill($width, $height);
+    }
 
 
     //
