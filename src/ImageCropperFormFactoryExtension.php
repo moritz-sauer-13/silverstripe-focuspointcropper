@@ -1,6 +1,6 @@
 <?php
 
-namespace Restruct\SilverStripe\ImageCropper;
+namespace MoritzSauer\SilverStripe\ImageCropper;
 
 use JonoM\FocusPoint\Forms\FocusPointField;
 use SilverStripe\AssetAdmin\Forms\FileFormFactory;

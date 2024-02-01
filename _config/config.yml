@@ -4,7 +4,7 @@ After: 'focuspoint'
 ---
 SilverStripe\Assets\Image:
   extensions:
-    - Restruct\SilverStripe\ImageCropper\ImageCropperExtension
+    - MoritzSauer\SilverStripe\ImageCropper\ImageCropperExtension
 
 JonoM\FocusPoint\Forms\FocusPointField:
   max_width: 400
@@ -12,10 +12,10 @@ JonoM\FocusPoint\Forms\FocusPointField:
 
 SilverStripe\AssetAdmin\Forms\FileFormFactory:
   extensions:
-    - Restruct\SilverStripe\ImageCropper\ImageCropperFormFactoryExtension
+    - MoritzSauer\SilverStripe\ImageCropper\ImageCropperFormFactoryExtension
 
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
-    - 'restruct/silverstripe-focuspointcropper: client/dist/styles/sscropper.css'
+    - 'moritz-sauer-13/silverstripe-focuspointcropper: client/dist/styles/sscropper.css'
   extra_requirements_javascript:
-    - 'restruct/silverstripe-focuspointcropper: client/dist/js/sscropper.js'
+    - 'moritz-sauer-13/silverstripe-focuspointcropper: client/dist/js/sscropper.js'

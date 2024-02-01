@@ -1,6 +1,6 @@
 <?php
 
-namespace Restruct\SilverStripe\ImageCropper;
+namespace MoritzSauer\SilverStripe\ImageCropper;
 
 use JonoM\FocusPoint\FieldType\DBFocusPoint;
 use SilverStripe\Assets\Image;
@@ -65,7 +65,7 @@ class ImageCropperExtension
     {
         return $this->applyCropManipulation();
     }
-    
+
 
     //
     // Special version: CroppedOffsetFill - crop and transpose xPos/yPos offset a certain amount (persentage) (eg move it a bit to the left)
