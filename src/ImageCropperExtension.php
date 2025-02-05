@@ -270,7 +270,7 @@ class ImageCropperExtension
     private function applyCropManipulation(?int $width=null, ?int $height=null, bool $upscale=true)
     {
         // originalX"]=> int(666) ["originalY"]=> int(238) ["originalWidth"]=> int(1342) ["originalHeight
-        $cropData = json_decode( $this->owner->CropData );
+	$cropData = $this->owner->CropData ? json_decode($this->owner->CropData) : null;
         if (
             $cropData // If we have data and the properties we need are defined
             && property_exists($cropData, 'originalX') && property_exists($cropData, 'originalY')
