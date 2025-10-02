@@ -9,7 +9,7 @@
 		"homepage": "http://restruct.nl"
 	}],
 	"require": {
-		"jonom/focuspoint": "^4.0",
+		"jonom/focuspoint": "^4 || ^5",
         "restruct/silverstripe-simpler": "^0.1"
 	},
     "replace": {
