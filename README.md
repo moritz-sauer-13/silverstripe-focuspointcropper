@@ -17,7 +17,7 @@ When you edit an image in the CMS there should be an extra 'Focus Point + Crop' 
 Scroll on the image to zoom, drag the image and (depending on configuration) resize the selection to set the crop area.
 Click on the subject of the image to set the focus area and save the image.
 
-## Config (@TODO: check/update this for SS4 version)
+## Config (@TODO: check/update this for SS4/5+)
 
 Config options can be set using the SilverStripe Config API and will be fed directly to the js cropperfield.
 Options can be set globally or per field instance.
