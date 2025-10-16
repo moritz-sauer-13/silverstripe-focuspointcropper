@@ -22,7 +22,7 @@ class PublishCropDataTask
      * @param HTTPRequest $request
      * @throws ValidationException
      */
-    public function execute($input, $output)
+    public function execute($input, $output): int
     {
         // Get all Live images missing CropData
         $imageIDs = Versioned::get_by_stage(Image::class, Versioned::DRAFT)
