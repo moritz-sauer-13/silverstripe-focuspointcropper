@@ -12,9 +12,9 @@ class PublishCropDataTask
 {
     private static $segment = 'PublishCropDataTask';
 
-    protected $title = 'Hydrate Live images missing crop data';
+    protected string $title = 'Hydrate Live images missing crop data';
 
-    protected $description = 'Run this task to update live versions of images which are missing CropData';
+    protected static string $description = 'Run this task to update live versions of images which are missing CropData';
 
     public $chunksize = 100;
 
@@ -22,7 +22,7 @@ class PublishCropDataTask
      * @param HTTPRequest $request
      * @throws ValidationException
      */
-    public function run($request)
+    public function execute($input, $output)
     {
         // Get all Live images missing CropData
         $imageIDs = Versioned::get_by_stage(Image::class, Versioned::DRAFT)
@@ -62,5 +62,6 @@ class PublishCropDataTask
         }
 
         print('ALL DONE!!!');
+        return 0;
     }
 }

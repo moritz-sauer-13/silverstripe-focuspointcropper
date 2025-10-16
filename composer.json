@@ -1,5 +1,5 @@
 {
-	"name": "restruct/silverstripe-focuspointcropper",
+	"name": "moritz-sauer-13/silverstripe-focuspointcropper",
 	"description": "Even smarter automatic image cropping for SilverStripe",
 	"type": "silverstripe-vendormodule",
 	"keywords": ["silverstripe", "crop", "cropping", "focus", "focuspoint", "image"],
@@ -9,8 +9,8 @@
 		"homepage": "http://restruct.nl"
 	}],
 	"require": {
-		"jonom/focuspoint": "^4 || ^5",
-        "restruct/silverstripe-simpler": "^0.1"
+		"jonom/focuspoint": "^6",
+        "restruct/silverstripe-simpler": "^1"
 	},
     "replace": {
         "micschk/silverstripe-focuspointcropper": "*"

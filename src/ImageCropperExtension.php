@@ -8,17 +8,17 @@ use SilverStripe\Assets\Image_Backend;
 use SilverStripe\Assets\Storage\AssetContainer;
 use SilverStripe\Assets\Storage\DBFile;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 
 /**
  * ImageCropper extension
  * Regular ->Fit() etc methods come from trait ImageManipulation which is applied on Image::class from its parent File::class
  *
- * @extends DataExtension
+ * @extends Extension
  * @property DBFile|Image $owner
  */
 class ImageCropperExtension
-    extends DataExtension
+    extends Extension
 {
     /**
      * Field to hold cropdata
@@ -65,7 +65,7 @@ class ImageCropperExtension
     {
         return $this->applyCropManipulation();
     }
-    
+
 
     //
     // Special version: CroppedOffsetFill - crop and transpose xPos/yPos offset a certain amount (persentage) (eg move it a bit to the left)
