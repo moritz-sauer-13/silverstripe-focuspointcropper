@@ -16,6 +16,6 @@ SilverStripe\AssetAdmin\Forms\FileFormFactory:
 
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
-    - 'restruct/silverstripe-focuspointcropper: client/dist/styles/sscropper.css'
+    - 'moritz-sauer-13/silverstripe-focuspointcropper: client/dist/styles/sscropper.css'
   extra_requirements_javascript:
-    - 'restruct/silverstripe-focuspointcropper: client/dist/js/sscropper.js'
+    - 'moritz-sauer-13/silverstripe-focuspointcropper: client/dist/js/sscropper.js'
