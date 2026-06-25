@@ -313,3 +313,67 @@
 .focuspoint .cropper-move, .focuspoint .cropper-dashed, .focuspoint .cropper-center, .focuspoint .cropper-face {
   display: none;
 }
+
+/* === SS6 combined crop + focus widget ============================ */
+.sscropper { max-width: 100%; margin: 0 0 1rem; }
+.sscropper__image { display: block; max-width: 100%; }
+
+/* keep the JSON value field and the standalone focuspoint field hidden */
+[id$="_CropData_Holder"]:not(.debug) { position: absolute; left: -99999px; }
+[id$="_FocusPoint_Holder"] { display: none !important; }
+
+/* hide cropper's central face/guide layers so a click inside the crop box
+   reaches the image (= set focus); handles stay native and fully grabbable */
+.sscropper .cropper-face,
+.sscropper .cropper-dashed,
+.sscropper .cropper-center { display: none; }
+
+/* clearly visible, easy-to-grab handles (big invisible ::after hit area) */
+.sscropper .cropper-line { opacity: .35; }
+.sscropper .cropper-point {
+  opacity: 1;
+  background-color: #fff;
+  box-shadow: 0 0 0 1px #1f7bff, 0 0 2px 1px rgba(0, 0, 0, .4);
+}
+.sscropper .cropper-point::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 26px; height: 26px; transform: translate(-50%, -50%);
+}
+.sscropper .cropper-line.line-n::after,
+.sscropper .cropper-line.line-s::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 18px; transform: translateY(-50%);
+}
+.sscropper .cropper-line.line-e::after,
+.sscropper .cropper-line.line-w::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 18px; transform: translateX(-50%);
+}
+
+/* focus marker (visual only; never intercepts handle drags) */
+.sscropper-focus__marker {
+  position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; box-sizing: border-box;
+  border: 2px solid #fff; border-radius: 50%; z-index: 5; pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(0, 0, 0, .4);
+}
+.sscropper-focus__marker::before, .sscropper-focus__marker::after { content: ""; position: absolute; background: #fff; }
+.sscropper-focus__marker::before { left: 50%; top: 4px; bottom: 4px; width: 2px; margin-left: -1px; }
+.sscropper-focus__marker::after  { top: 50%; left: 4px; right: 4px; height: 2px; margin-top: -1px; }
+
+/* === SS6 read-only crop/focus preview (non-edit forms) === */
+.sscropper-preview { position: relative; display: block; max-width: 100%; overflow: hidden; margin: 0 0 1rem; }
+.sscropper-preview img { display: block; }
+.sscropper-preview__crop {
+  position: absolute; box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5), 0 0 0 9999px rgba(0, 0, 0, .5);
+  pointer-events: none;
+}
+.sscropper-preview__focus {
+  position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; box-sizing: border-box;
+  border: 2px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(0, 0, 0, .4);
+  pointer-events: none;
+}
+.sscropper-preview__focus::before, .sscropper-preview__focus::after { content: ""; position: absolute; background: #fff; }
+.sscropper-preview__focus::before { left: 50%; top: 3px; bottom: 3px; width: 2px; margin-left: -1px; }
+.sscropper-preview__focus::after  { top: 50%; left: 3px; right: 3px; height: 2px; margin-top: -1px; }
+

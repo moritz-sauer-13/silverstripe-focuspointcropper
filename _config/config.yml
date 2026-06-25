@@ -10,7 +10,7 @@ JonoM\FocusPoint\Forms\FocusPointField:
   max_width: 400
   max_height: 300
 
-SilverStripe\AssetAdmin\Forms\FileFormFactory:
+SilverStripe\AssetAdmin\Forms\ImageFormFactory:
   extensions:
     - Restruct\SilverStripe\ImageCropper\ImageCropperFormFactoryExtension
 

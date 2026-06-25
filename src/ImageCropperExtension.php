@@ -41,15 +41,6 @@ class ImageCropperExtension
         'zoomable' => false,
     );
 
-    public function onBeforeWrite()
-    {
-        // @TODO: check if we still need this:
-//        if (Config::inst()->get(get_parent_class(), 'flush_on_change') && $this->owner->isChanged('CropData')) {
-//            $this->owner->deleteFormattedImages();
-//        }
-        parent::onBeforeWrite();
-    }
-
     /**
      * Apply the crop to this image (if any) and just return the cropped image.
      * Use in templates with $CroppedImage

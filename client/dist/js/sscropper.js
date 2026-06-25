@@ -11,153 +11,220 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var cropperjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! cropperjs */ "./node_modules/cropperjs/dist/cropper.js");
 /* harmony import */ var cropperjs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cropperjs__WEBPACK_IMPORTED_MODULE_0__);
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+// --- SilverStripe 6 rewrite (vanilla JS, no jQuery, React-safe) ---------------
+// The original implementation relied on jQuery ($) and the legacy 'DOMNodesInserted'
+// event, neither of which exist in the SS6 React asset-admin. This rewrite:
+//   * uses a MutationObserver to detect the cropper mount once React renders it,
+//   * builds its own <img> + Cropper inside a LiteralField mount (raw HTML, opaque
+//     to React, so our DOM is never reconciled away),
+//   * is a combined crop + focus widget: the crop handles work natively (nothing is
+//     overlaid on top of them); the focus point is set by a plain click inside the
+//     crop box (drags and handle clicks are ignored),
+//   * writes the crop JSON and focus point back into the React-controlled inputs
+//     (CropData / FocusPointX / FocusPointY) via the native value setter + input event.
+var Cropper = cropperjs__WEBPACK_IMPORTED_MODULE_0___default();
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function ssSetReactInputValue(input, value) {
+  if (!input) {
+    return;
+  }
+  var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+  if (setter && setter.set) {
+    setter.set.call(input, value);
+  } else {
+    input.value = value;
+  }
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function ssField(name) {
+  return document.querySelector('input[name="' + name + '"]');
+}
 
-//import $ from 'jQuery';
-//import React from 'react';
-//import Injector from 'lib/Injector';
-// import registerComponents from './registerComponents';
+function ssClamp(v) {
+  if (v < -1) { return -1; }
+  if (v > 1) { return 1; }
+  return v;
+}
 
-var sscropper = {
-  cropper: null,
-  // cropperjs object/instance
-  cropImgEl: null,
-  cropSizing: null,
-  cropConfig: null,
-  // This is a bit of a hack, we're placing the focuspoint overlay inside the cropperjs preview layer and giving it the same offset
-  // since both JS plugins are using an overlay, we sacrifice the drag behaviour of cropper in order to be able to detect clicks in focusfield
-  $previewImgEl: null,
-  $focusPickerOverlayEl: null,
-  syncFocusPickerOverlay: function syncFocusPickerOverlay() {
-    this.$focusPickerOverlayEl.css({
-      width: this.$previewImgEl.css('width'),
-      height: this.$previewImgEl.css('height'),
-      transform: this.$previewImgEl.css('transform')
-    });
-  },
-  configField: function configField() {
-    // return this.$el.parents('.fieldgroup').find('input[name="CropData"]')
-    return $(this.cropImgEl).parents('fieldset').find('input[name="CropperConfig"]');
-  },
-  dataField: function dataField() {
-    // return this.$el.parents('.fieldgroup').find('input[name="CropData"]')
-    // return $(this.cropImgEl).parents('fieldset').find('input[name="CropData"]');
-    return document.getElementById("Form_fileEditForm_CropData");
-  },
-  baseConfig: {
-    // aspectRatio: 16 / 9,
-    // autoCrop: false,
+function ssInitCropper(mount) {
+  if (mount.getAttribute('data-sscropper-init') === '1') {
+    return;
+  }
+  mount.setAttribute('data-sscropper-init', '1');
+
+  var cropConfig = {};
+  var cropSizing = {};
+  try { cropConfig = JSON.parse(mount.getAttribute('data-cropconfig')) || {}; } catch (e) { cropConfig = {}; }
+  try { cropSizing = JSON.parse(mount.getAttribute('data-cropsizing')) || {}; } catch (e) { cropSizing = {}; }
+
+  var imageUrl = mount.getAttribute('data-imageurl');
+  var imageWidth = parseInt(mount.getAttribute('data-imagewidth'), 10) || 0;
+  var imageHeight = parseInt(mount.getAttribute('data-imageheight'), 10) || 0;
+  if (!imageUrl) {
+    mount.removeAttribute('data-sscropper-init');
+    return;
+  }
+
+  // Own image element, decoupled from focuspoint's React-owned DOM.
+  var img = document.createElement('img');
+  img.className = 'sscropper__image';
+  if (imageWidth) { img.width = imageWidth; }
+  if (imageHeight) { img.height = imageHeight; }
+  img.src = imageUrl;
+  mount.appendChild(img);
+
+  var baseConfig = {
+    viewMode: 1,
     autoCropArea: 1,
     movable: false,
     rotatable: false,
     scalable: false,
     zoomable: false,
-    // modal: false,
+    zoomOnTouch: false,
+    zoomOnWheel: false,
     dragMode: 'none',
     guides: false,
+    center: false,
     highlight: false,
-    background: false // cropBoxMovable: false,
+    background: false,
+    toggleDragModeOnDblclick: false
+  };
+  var mergedConfig = Object.assign({}, baseConfig, cropConfig);
 
-  },
-  init: function init(image) {
-    if (!image) {
-      return;
+  // Scale factor between the (downsized) preview the cropper works on and the
+  // original image; computed once cropperjs reports the real image data.
+  var cropDataToOriginalScale = 1;
+
+  mergedConfig.ready = function () {
+    var cropper = this.cropper;
+    var imgData = cropper.getImageData();
+    var previewW = cropSizing.previewWidth || imgData.naturalWidth;
+    var originalW = cropSizing.originalWidth || imgData.naturalWidth;
+    cropDataToOriginalScale = (imgData.width / imgData.naturalWidth) * (originalW / previewW);
+    var originalToCropDataScale = cropDataToOriginalScale ? (1 / cropDataToOriginalScale) : 1;
+
+    // Restore an existing crop (stored relative to the original image size).
+    var cropField = ssField('CropData');
+    if (cropField && cropField.value) {
+      try {
+        var existing = JSON.parse(cropField.value);
+        if (existing && typeof existing.originalX !== 'undefined') {
+          cropper.setData({
+            x: existing.originalX * originalToCropDataScale,
+            y: existing.originalY * originalToCropDataScale,
+            width: existing.originalWidth * originalToCropDataScale,
+            height: existing.originalHeight * originalToCropDataScale
+          });
+        }
+      } catch (e) {
+        // no/invalid existing crop -> leave default crop box
+      }
     }
 
-    var self = this; // cropper
+    ssBuildFocusPicker(mount, cropper);
+  };
 
-    self.cropImgEl = image;
-    self.cropSizing = JSON.parse(this.configField().attr('data-cropsizing'));
-    self.cropConfig = JSON.parse(this.configField().attr('data-cropconfig'));
+  mergedConfig.cropend = function () {
+    var cropData = this.cropper.getData(true); // rounded
+    cropData.originalX = Math.round(cropData.x * cropDataToOriginalScale);
+    cropData.originalY = Math.round(cropData.y * cropDataToOriginalScale);
+    cropData.originalWidth = Math.round(cropData.width * cropDataToOriginalScale);
+    cropData.originalHeight = Math.round(cropData.height * cropDataToOriginalScale);
+    ssSetReactInputValue(ssField('CropData'), JSON.stringify(cropData));
+  };
 
-    var mergedConfig = _objectSpread(_objectSpread({}, self.baseConfig), self.cropConfig);
-
-    mergedConfig.cropDataToOriginalScale = 1;
-    mergedConfig.originalToCropDataScale = 1; // Ready callback (called after cropperjs has been instantiated)
-
-    mergedConfig.ready = function () {
-      // Somehow the scaling info in cropData is missing (it should be included as per the documentation), we'll just calculate it ourselves;
-      var imgData = this.cropper.getImageData(); // {naturalWidth: 800, naturalHeight: 482, aspectRatio: 1.6597510373443984, width: 400, height: 241, …}
-
-      mergedConfig.cropDataToOriginalScale = imgData.width / imgData.naturalWidth * (self.cropSizing.originalWidth / self.cropSizing.previewWidth);
-      mergedConfig.originalToCropDataScale = 1 / mergedConfig.cropDataToOriginalScale; // load existing data (if any)
-
-      try {
-        var existing_crop = JSON.parse($(self.dataField()).val()); // Update x/y & width/height based on originalX/originalY & originalWidth/originalHeight,
-        // to account for changed image size (eg updated FocusPointField.max_width/max_height)
-        // existing_crop: {"x":120,"y":51,"width":242,"height":249,"originalX":665,"originalY":283,"originalWidth":1341,"originalHeight":1380}
-        // self.cropSizing: {originalWidth: 1380, originalHeight: 832, previewWidth: 400, previewHeight: 241, cmsPreviewWidth: 930}
-
-        existing_crop.x = existing_crop.originalX * mergedConfig.originalToCropDataScale;
-        existing_crop.y = existing_crop.originalY * mergedConfig.originalToCropDataScale;
-        existing_crop.width = existing_crop.originalWidth * mergedConfig.originalToCropDataScale;
-        existing_crop.height = existing_crop.originalHeight * mergedConfig.originalToCropDataScale;
-        this.cropper.setData(existing_crop);
-      } catch (e) {
-        console.log('CROPPER: Could not set existing crop...');
-      } // Move the focuspoint layers within cropper to have them co-exist (this = image, self = cropper/self)
-
-
-      self.$previewImgEl = $(self.cropImgEl).siblings('.cropper-container').find('.cropper-view-box img');
-      self.$focusPickerOverlayEl = $(self.cropImgEl).siblings('.focuspoint-picker__overlay');
-      self.$focusPickerOverlayEl.insertAfter(self.$previewImgEl); // Sync positions
-
-      self.syncFocusPickerOverlay();
-    }; // Cropend callback (called when crop area has changed)
-
-
-    mergedConfig.cropend = function () {
-      // {"x":78,"y":0,"width":267,"height":267,"rotate":0,"scaleX":1,"scaleY":1}
-      // let cropData = this.cropper.getData();
-      var cropData = this.cropper.getData(true); // get rounded data
-      // {originalWidth: 216, originalHeight: 144, previewWidth: 400, previewHeight: 267}
-      // make sizes relative to original image (we're using a preview image):
-
-      cropData.originalX = Math.round(cropData.x * mergedConfig.cropDataToOriginalScale);
-      cropData.originalY = Math.round(cropData.y * mergedConfig.cropDataToOriginalScale);
-      cropData.originalWidth = Math.round(cropData.width * mergedConfig.cropDataToOriginalScale);
-      cropData.originalHeight = Math.round(cropData.height * mergedConfig.cropDataToOriginalScale); // Apparently we need a focus AND change for react to pick up our naive way of setting a formfield value...
-
-      var dataField = self.dataField();
-      var $dataField = $(dataField); // $dataField.trigger('focus');
-
-      self.dataField().focus({
-        preventScroll: true
-      });
-      $dataField.val(JSON.stringify(cropData));
-      $dataField.trigger('change');
-    }; // @TODO: Crop (eg drag) event, once per dragged pixel -> sync focuspoint overlay to stay at same position
-
-
-    mergedConfig.cropmove = function (event) {
-      self.syncFocusPickerOverlay(); // let fpPicker = $('.focuspoint-picker__gradient');
-      // fpPicker.css('left', parseFloat(fpPicker.css('left')) - event.detail.originalEvent.movementX);
-      // fpPicker.css('top', parseFloat(fpPicker.css('top')) - event.detail.originalEvent.movementY);
-      // console.log(fpPicker.css('top'));
-      // console.log(event.detail.originalEvent.movementY);
-      // console.log(parseFloat(fpPicker.css('top')) - event.detail.originalEvent.movementY);
-    }; //
-    // Instantiate the whole thing...
-    //
-
-
-    self.cropper = new (cropperjs__WEBPACK_IMPORTED_MODULE_0___default())(image, mergedConfig);
+  var start = function () {
+    /* eslint-disable no-new */
+    new Cropper(img, mergedConfig);
+  };
+  if (img.complete && img.naturalWidth) {
+    start();
+  } else {
+    img.addEventListener('load', start, { once: true });
+    img.addEventListener('error', function () {
+      mount.removeAttribute('data-sscropper-init');
+    }, { once: true });
   }
-}; // SimplerSilverstripe: DOMNodesInserted & DOMNodesRemoved
+}
 
-document.addEventListener('DOMNodesInserted', function (event) {
-  // INIT CROPPERJS
-  // console.log('INIT croppper');
-  var image = document.querySelector('#Form_fileEditForm_FocusPoint_Holder .focuspoint-picker__image');
-
-  if (image) {
-    sscropper.init(image);
+// Focus picker: no overlay (so the crop handles stay native & fully grabbable).
+// A plain click inside the crop box sets the focus point; clicks on a handle or
+// clicks that were actually drags are ignored. The marker is purely visual.
+function ssBuildFocusPicker(mount, cropper) {
+  var container = mount.querySelector('.cropper-container');
+  if (!container || mount.querySelector('.sscropper-focus__marker')) {
+    return;
   }
-});
+
+  var marker = document.createElement('span');
+  marker.className = 'sscropper-focus__marker';
+  container.appendChild(marker);
+
+  var positionMarker = function (focusX, focusY) {
+    marker.style.left = ((focusX + 1) * 0.5 * container.clientWidth) + 'px';
+    marker.style.top = ((focusY + 1) * 0.5 * container.clientHeight) + 'px';
+  };
+
+  var fx = parseFloat((ssField('FocusPointX') || {}).value);
+  var fy = parseFloat((ssField('FocusPointY') || {}).value);
+  if (Number.isNaN(fx)) { fx = 0; }
+  if (Number.isNaN(fy)) { fy = 0; }
+  positionMarker(fx, fy);
+
+  // Record the press position in the capture phase (before cropper handles it) so the
+  // drag detection below is reliable regardless of pointer/mouse event interplay.
+  var downX = null;
+  var downY = null;
+  document.addEventListener('pointerdown', function (event) {
+    downX = event.clientX;
+    downY = event.clientY;
+  }, true);
+
+  container.addEventListener('click', function (event) {
+    // ignore clicks that were actually drags (e.g. resizing the crop box)
+    if (downX !== null && (Math.abs(event.clientX - downX) > 4 || Math.abs(event.clientY - downY) > 4)) {
+      return;
+    }
+    // ignore clicks on the crop handles/lines
+    if (event.target.closest && event.target.closest('.cropper-point, .cropper-line')) {
+      return;
+    }
+    var rect = container.getBoundingClientRect();
+    var x = event.clientX - rect.left;
+    var y = event.clientY - rect.top;
+    // the focus point may only be placed inside the current crop rectangle
+    if (cropper && typeof cropper.getCropBoxData === 'function') {
+      var box = cropper.getCropBoxData();
+      if (x < box.left || x > box.left + box.width || y < box.top || y > box.top + box.height) {
+        return;
+      }
+    }
+    var focusX = ssClamp((x * 2 / rect.width) - 1);
+    var focusY = ssClamp((y * 2 / rect.height) - 1);
+    positionMarker(focusX, focusY);
+    ssSetReactInputValue(ssField('FocusPointX'), String(focusX));
+    ssSetReactInputValue(ssField('FocusPointY'), String(focusY));
+  });
+}
+
+function ssScanForCroppers() {
+  var mounts = document.querySelectorAll('.sscropper:not([data-sscropper-init])');
+  for (var i = 0; i < mounts.length; i++) {
+    ssInitCropper(mounts[i]);
+  }
+}
+
+if (typeof MutationObserver !== 'undefined') {
+  var ssCropObserver = new MutationObserver(function () {
+    ssScanForCroppers();
+  });
+  ssCropObserver.observe(document.documentElement, { childList: true, subtree: true });
+}
+document.addEventListener('DOMContentLoaded', ssScanForCroppers);
+ssScanForCroppers();
+
 
 /***/ }),
 

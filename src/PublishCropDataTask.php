@@ -4,7 +4,7 @@ use SilverStripe\Assets\Image;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\Debug;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Versioned\Versioned;
 
 class PublishCropDataTask

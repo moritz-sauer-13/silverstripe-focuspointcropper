@@ -8,16 +8,17 @@
 		"name": "Restruct",
 		"homepage": "http://restruct.nl"
 	}],
+	"version": "6.0.1",
 	"require": {
-		"jonom/focuspoint": "^6",
-        "restruct/silverstripe-simpler": "^1"
+		"silverstripe/framework": "^6",
+		"jonom/focuspoint": "^6"
 	},
     "replace": {
         "micschk/silverstripe-focuspointcropper": "*"
     },
     "autoload": {
         "psr-4": {
-            "Restruct\\SilverStripe\\FocusPointCropper\\": "src/"
+            "Restruct\\SilverStripe\\ImageCropper\\": "src/"
         }
     },
 	"extra": {
