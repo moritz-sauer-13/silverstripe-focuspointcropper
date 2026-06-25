@@ -5,15 +5,15 @@
 	"keywords": ["silverstripe", "crop", "cropping", "focus", "focuspoint", "image"],
 	"license": "BSD-3-Clause",
 	"authors": [{
-		"name": "Restruct",
-		"homepage": "http://restruct.nl"
+		"name": "Moritz Sauer",
+		"homepage": "https://tietge.com"
 	}],
 	"require": {
 		"silverstripe/framework": "^6",
 		"jonom/focuspoint": "^6"
 	},
     "replace": {
-        "micschk/silverstripe-focuspointcropper": "*"
+        "restruct/silverstripe-focuspointcropper": "*"
     },
     "autoload": {
         "psr-4": {
