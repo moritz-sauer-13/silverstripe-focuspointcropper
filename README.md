@@ -1,3 +1,5 @@
+#This is a fork from https://github.com/restruct/silverstripe-focuspointcropper to Support SS6 
+
 # FocusPointCropper: (Even) Smarter Image Cropping for SilverStripe
 
 This module bolts an interface to crop an image from within the CMS, on top of Jonom's excellent FocusPoint module.
